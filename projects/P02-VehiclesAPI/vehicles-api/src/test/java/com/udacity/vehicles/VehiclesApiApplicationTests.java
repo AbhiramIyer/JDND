@@ -5,9 +5,8 @@ import com.udacity.vehicles.domain.Location;
 import com.udacity.vehicles.domain.car.Car;
 import com.udacity.vehicles.domain.car.Details;
 import com.udacity.vehicles.domain.manufacturer.Manufacturer;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -16,11 +15,9 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.net.URI;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 
 public class VehiclesApiApplicationTests {
@@ -38,36 +35,36 @@ public class VehiclesApiApplicationTests {
     public void getAllCars() {
         HttpEntity<Car> request = new HttpEntity<>(getCar(), new HttpHeaders());
         ResponseEntity<String> response = testRestTemplate.postForEntity("http://localhost:" + port + "/cars", request, String.class);
-        Assert.assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
         response = testRestTemplate.getForEntity("http://localhost:" + port + "/cars/", String.class);
-        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
     public void canAddACarAndFindItAgainById() {
         Car newCar = getCar();
         ResponseEntity<Car> response = doAddCarOperation(newCar);
-        Assert.assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
 
         //Get the id of the car that was created
         Long newCarId = response.getBody().getId();
 
         //Get car by id
         response = doFindCarByIdOperation(newCarId);
-        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Car carByid = response.getBody();
 
-        Assert.assertEquals(newCar.getCondition(), carByid.getCondition());
-        Assert.assertEquals(newCar.getDetails().getMileage(), carByid.getDetails().getMileage());
-        Assert.assertNotNull(carByid.getPrice()); //should be populated from pricing service
-        Assert.assertNotNull(carByid.getLocation().getAddress()); //should be populated from maps service
+        Assertions.assertEquals(newCar.getCondition(), carByid.getCondition());
+        Assertions.assertEquals(newCar.getDetails().getMileage(), carByid.getDetails().getMileage());
+        Assertions.assertNotNull(carByid.getPrice()); //should be populated from pricing service
+        Assertions.assertNotNull(carByid.getLocation().getAddress()); //should be populated from maps service
     }
 
     @Test
     public void canAddACarAndDeleteIt() {
         Car newCar = getCar();
         ResponseEntity<Car> response = doAddCarOperation(newCar);
-        Assert.assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
 
         //Get the id of the car that was created
         Long newCarId = response.getBody().getId();
@@ -75,14 +72,14 @@ public class VehiclesApiApplicationTests {
         doDeleteCarByIdOperation(newCarId);
 
         response = doFindCarByIdOperation(newCarId);
-        Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
     public void canUpdateCar() {
         Car newCar = getCar();
         ResponseEntity<Car> response = doAddCarOperation(newCar);
-        Assert.assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
 
         //Get the car that was created
         Car car = response.getBody();
@@ -97,13 +94,13 @@ public class VehiclesApiApplicationTests {
         doUpdateCarOperation(car.getId(), car);
 
         response = doFindCarByIdOperation(car.getId());
-        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
 
         car = response.getBody();
-        Assert.assertEquals(newMileage, car.getDetails().getMileage());
-        Assert.assertEquals(Condition.NEW, car.getCondition());
-        Assert.assertEquals(manufacturer.getCode(), car.getDetails().getManufacturer().getCode());
-        Assert.assertEquals(manufacturer.getName(), car.getDetails().getManufacturer().getName());
+        Assertions.assertEquals(newMileage, car.getDetails().getMileage());
+        Assertions.assertEquals(Condition.NEW, car.getCondition());
+        Assertions.assertEquals(manufacturer.getCode(), car.getDetails().getManufacturer().getCode());
+        Assertions.assertEquals(manufacturer.getName(), car.getDetails().getManufacturer().getName());
 
     }
 
