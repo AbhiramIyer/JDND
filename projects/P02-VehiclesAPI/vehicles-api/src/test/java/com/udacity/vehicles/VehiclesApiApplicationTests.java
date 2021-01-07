@@ -86,10 +86,14 @@ public class VehiclesApiApplicationTests {
 
         //Get the car that was created
         Car car = response.getBody();
-        //Update some detail
+        //Update some details such as mileage, condition, manufacturer
         Integer oldMileage = car.getDetails().getMileage();
         Integer newMileage = oldMileage + 10;
         car.getDetails().setMileage(newMileage);
+        car.setCondition(Condition.NEW);
+        Manufacturer manufacturer = new Manufacturer(102, "Ford");
+        car.getDetails().setManufacturer(manufacturer);
+
         doUpdateCarOperation(car.getId(), car);
 
         response = doFindCarByIdOperation(car.getId());
@@ -97,6 +101,9 @@ public class VehiclesApiApplicationTests {
 
         car = response.getBody();
         Assert.assertEquals(newMileage, car.getDetails().getMileage());
+        Assert.assertEquals(Condition.NEW, car.getCondition());
+        Assert.assertEquals(manufacturer.getCode(), car.getDetails().getManufacturer().getCode());
+        Assert.assertEquals(manufacturer.getName(), car.getDetails().getManufacturer().getName());
 
     }
 
