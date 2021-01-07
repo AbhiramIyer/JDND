@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Implements the car service create, read, update or delete
@@ -34,7 +35,11 @@ public class CarService {
      * @return a list of all vehicles in the CarRepository
      */
     public List<Car> list() {
-        return repository.findAll();
+        return repository.findAll().stream().map(car -> {
+            setPrice(car);
+            setAddress(car);
+            return car;
+        }).collect(Collectors.toList());
     }
 
     /**
@@ -45,28 +50,40 @@ public class CarService {
     public Car findById(Long id) {
         Car car = repository.findById(id).orElseThrow(CarNotFoundException::new);
 
-        Price p = pricingServiceClient.get().uri("/prices/" + id).retrieve().bodyToMono(Price.class).block();
+        setPrice(car);
+        setAddress(car);
+
+        return car;
+    }
+
+    private void setPrice(Car car) {
+        Long id = car.getId();
+        Price p = getPrice(id);
         if (p != null) {
             car.setPrice(p.getPrice().toString());
         }
+    }
 
-        Address a = mapsClient.get()
-                .uri(uriBuilder -> {
-                    Double lat = car.getLocation().getLat();
-                    Double lon = car.getLocation().getLon();
-                    return uriBuilder.path("/maps").queryParam("lat", lat).queryParam("lon", lon).build();
-                })
-                .accept(MediaType.APPLICATION_JSON_UTF8)
-                .retrieve()
-                .bodyToMono(Address.class)
-                .block()
-                ;
+    private Price getPrice(Long id) {
+        return pricingServiceClient.get().uri("/prices/" + id).retrieve().bodyToMono(Price.class).block();
+    }
 
+    private void setAddress(Car car) {
+        Address a = getAddress(car.getLocation().getLat(), car.getLocation().getLon());
         if (a != null) {
             car.getLocation().setAddress(a.getAddress());
         }
+    }
 
-        return car;
+    private Address getAddress(Double lat, Double lon) {
+        return mapsClient.get()
+                .uri(uriBuilder -> {
+                    return uriBuilder.path("/maps").queryParam("lat", lat).queryParam("lon", lon).build();
+                })
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(Address.class)
+                .block();
     }
 
     /**
